@@ -1,6 +1,6 @@
 #!/bin/bash
 
-data=`date +%s`
+data=`date +%s%N`
 test_ly_name="test_$data.ly"
 solution_ly_name="solution_$data.ly"
 test_pdfName="esercizio"
