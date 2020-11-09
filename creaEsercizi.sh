@@ -47,9 +47,9 @@ done
 echo "" >> $test_ly_name
 
 # Only exercize
-./generaNote $numeroNote 0 2 note >> $solution_ly_name
+./generaNote $numeroNote $data 2 note >> $solution_ly_name
 
-testo=`./generaNote $numeroNote 0 2 name`
+testo=`./generaNote $numeroNote $data 2 name`
 
 cat >> $test_ly_name << @EOF
   }
