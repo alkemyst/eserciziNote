@@ -4,7 +4,9 @@
 #include <ctime>
 
 std::string noteNames[] = { "Do", "Re", "Mi", "Fa", "Sol", "La", "Si"};
-std::string noteCodes[] = { "c", "d", "e", "f", "g", "a", "b"};
+std::string noteCodes[] = { "c'", "d'", "e'", "f'", "g'", "a'", "b'"};
+std::string fullNoteCodes[] = { "<c' c'' >", "<d' d''>", "<e' e''>", "<f' f''>",
+                                "<g' g''>", "a'", "<b b'>", "<c' c''>" };
 
 int noRepeat = 1;
 int latestNotes[7] = { -1 };
@@ -35,7 +37,8 @@ int generateUniqueNote () {
 
 void printNote(int nota, std::string& format) {
 	if (format=="name") std::cout << "\" " << noteNames[nota] << " \" ";
-	else if (format=="note") std::cout << noteCodes[nota] << " ";
+	else if (format=="note") std::cout << fullNoteCodes[nota] << " ";
+	else if (format=="noteSimple") std::cout << noteCodes[nota] << " ";
 	else std::cerr << "unknown format: " << format << std::endl;
 }
 

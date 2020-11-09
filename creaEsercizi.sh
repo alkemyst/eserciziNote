@@ -24,22 +24,22 @@ cat > $test_ly_name << @EOF
 }
 
 <<
-  \new Staff \with { \omit TimeSignature } \new Voice = melody \relative c' {
+  \new Staff \with { \omit TimeSignature } \new Voice = melody {
     \hide KeySignature
+    \hide Stem
 @EOF
 
 cp $test_ly_name $solution_ly_name
 
 cat >> $test_ly_name << @EOF
     \hide NoteHead
-    \hide Stem
 @EOF
 
 # Only solutions
-nota="d "
+nota="d' "
 for ((i=0; i<numeroNote; i=i+1)); do
   echo -n "$nota" >> $test_ly_name
-  nota="d "
+  nota="d' "
   if ((i % 4 == 0)); then
           echo "" >> $test_ly_name
   fi
