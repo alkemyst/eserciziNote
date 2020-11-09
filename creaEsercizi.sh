@@ -65,8 +65,7 @@ cat >> $solution_ly_name << @EOF
 
 lilypond -o "$test_pdfName" "$test_ly_name"
 lilypond -o "$solution_pdfName" "$solution_ly_name"
-# rm -f "$test_ly_name"
+rm -f "$test_ly_name" "$solution_ly_name"
 
-evince "$test_pdfName.pdf" &
-# evince "$solution_pdfName.pdf" &
+evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 
