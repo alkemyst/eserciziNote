@@ -1,0 +1,7 @@
+test_*.ly
+solution_*.ly
+soluzione.pdf
+esercizio.pdf
+*.back
+
+generaNote
