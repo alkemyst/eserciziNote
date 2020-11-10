@@ -17,7 +17,7 @@ solution_pdfName="solution"
 all_pdfName="exercise_solution"
 
 notesPerLine=16
-numberOfLines=40
+numberOfLines=13
 numeroNote=$((notesPerLine*numberOfLines))
 
 cat > $test_ly_name << @EOF
@@ -77,17 +77,12 @@ $testo }
 
 cat >> $solution_ly_name << @EOF
   }
-  \new Lyrics \lyricsto melody {
-  \override LyricText.font-name = #"Source Serif Pro"
-%  \override LyricText.font-name = #"Equity Text A"
-%  \override LyricText.font-name = #"Sunday Comics BB"
-  \override LyricText.font-size = #-2
-$testo }
 >>
 @EOF
 
 lilypond -o "$test_pdfName" "$test_ly_name"
 lilypond -o "$solution_pdfName" "$solution_ly_name"
+rm -f "$test_ly_name" "$solution_ly_name"
 
 which evince && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 # pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
