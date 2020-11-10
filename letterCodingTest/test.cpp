@@ -7,19 +7,57 @@
 const std::string vowels = "012";
 const std::string goodConsonants = "OI";
 
-//std::string encode(int number, const std::string &style) {
-//  std::vector<int> digitValues;
-//  for (int i = myCode.length() - 1; i >= 0; --i) {
-//    aLetter = myCode[i];
-//    while (number != 0) {
-//    }
-//  }
-//}
+std::string encode(const int originalInput, const std::string &myCode) {
+  int currentInput = originalInput;
+  std::vector<const std::string *> myDigits;
+  myDigits.push_back(&vowels);
+  myDigits.push_back(&goodConsonants);
+  int nDigits, thisDigit, digitValue;
+  std::string result = "";
+  int compute = 0;
+  char aLetter;
+
+  digitValue = 1;
+  for (int i = myCode.length() - 1; i >= 0; --i) {
+    aLetter = myCode[i];
+    for (const auto digits : myDigits) {
+      if (digits->find(aLetter) != std::string::npos) {
+
+        // There are nDigits digits in this position
+        nDigits = digits->length();
+
+        // This digit is ...
+        thisDigit = currentInput % nDigits;
+
+        // Let's update the final result
+        result = digits->at(thisDigit) + result;
+
+        // I remove the digit and divide the current input value
+        currentInput -= thisDigit;
+        currentInput /= nDigits;
+
+        // And write the result we are actually encoding here
+        // and also update digitValue for the next digit, if any
+        compute += thisDigit * digitValue;
+        digitValue *= nDigits;
+      }
+      if (currentInput == 0)
+        break;
+    }
+  }
+
+  // Final check to make sure the coding went right
+  if (originalInput != compute) {
+    std::cerr << "WARNING: you gave me " << originalInput
+              << " and I think I encoded " << compute << " using system '"
+              << myCode << "'" << std::endl;
+  }
+  return result;
+}
 
 int decode(const std::string &myCode) {
 
   char aLetter;
-  // std::cerr << "my code is '" << myCode << "'" << std::endl;
   std::string valueString = "";
 
   size_t foundPos;
@@ -34,25 +72,32 @@ int decode(const std::string &myCode) {
   for (int i = myCode.length() - 1; i >= 0; --i) {
     aLetter = myCode[i];
     for (const auto digits : myDigits) {
-      // std::cerr << "letter '" << aLetter << "'";
       if ((foundPos = digits->find(aLetter)) != std::string::npos) {
         nDigits = digits->length();
-        // std::cerr << " is digit #" << foundPos;
         valueString = std::to_string(nDigits) + "-" + valueString;
         result += int(foundPos) * digitValue;
         digitValue *= nDigits;
       }
     }
-    // std::cerr << std::endl;
   }
-  // std::cerr << valueString << std::endl;
   return result;
 }
 
 int main(int argc, char *argv[]) {
+
   std::string myCode = argv[1];
-  int resultingCode = decode(myCode);
-  std::cout << resultingCode << std::endl;
+  int codingNumber = atoi(argv[2]);
+
+  for (int i = 0; i <= codingNumber; ++i) {
+    std::string coded = encode(i, myCode);
+    int resultingCode = decode(coded);
+    std::cout << i << ", \"" << coded << "\", " << resultingCode;
+    if (i == resultingCode)
+      std::cout << ", \"OK\"";
+    else
+      std::cout << ", \"ERROR\"";
+    std::cout << std::endl;
+  }
 
   return 0;
 }
