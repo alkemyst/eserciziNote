@@ -6,7 +6,7 @@
 std::string noteNames[] = {"Do", "Re", "Mi", "Fa", "Sol", "La", "Si"};
 std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
 std::string fullNoteCodes[] = {"<c' c'' >", "<d' d''>", "<e' e''>", "<f' f''>",
-                               "<g' g''>",  "a'",       "<b b'>",   "<c' c''>"};
+                               "<g' g''>",  "<a' a''>", "<b b'>",   "<c' c''>"};
 
 int noRepeat = 1;
 int latestNotes[7] = {-1};
@@ -39,7 +39,7 @@ int generateUniqueNote() {
 void printNote(int nota, std::string &format) {
   if (format == "name")
     std::cout << "\" " << noteNames[nota] << " \" ";
-  else if (format == "note")
+  else if ((format == "note") || (format == "fake"))
     std::cout << fullNoteCodes[nota] << " ";
   else if (format == "noteSimple")
     std::cout << noteCodes[nota] << " ";
@@ -48,13 +48,10 @@ void printNote(int nota, std::string &format) {
 }
 
 int main(int argc, char *argv[]) {
-  //	if (argc<2) return -1;
-  //	if (argc>3) return -1;
-  //	int timerSeed = 0xcaffe;  // and not time(NULL)
-
-  if (argc != 5) {
+  if (argc != 6) {
     std::cerr << "Syntax: " << argv[0]
-              << " numeroNote timerSeed noRepeat [name|note]" << std::endl;
+              << " numeroNote timerSeed noRepeat [name|note|fake] notesPerLine"
+              << std::endl;
     return -1;
   }
   int nNotes = atoi(argv[1]);
@@ -65,6 +62,13 @@ int main(int argc, char *argv[]) {
   if (noRepeat > 6)
     noRepeat = 6;
   std::string formatNote = argv[4];
+  int notesPerLine = atoi(argv[5]);
+
+  if (formatNote == "fake") {
+    // setup the fake note generation
+    for (int i = 0; i < 7; ++i)
+      fullNoteCodes[i] = "d'";
+  }
 
   srand(timerSeed);
 
@@ -72,6 +76,10 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < nNotes; ++i) {
     nota = generateUniqueNote();
     printNote(nota, formatNote);
+    if ((notesPerLine != 0) && (formatNote != "name") &&
+        ((i % 4) == (notesPerLine - 1)))
+      std::cout << " \\break";
+
     if (i % 4 == 3)
       std::cout << std::endl;
     if (noRepeat)

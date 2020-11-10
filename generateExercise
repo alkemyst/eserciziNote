@@ -17,6 +17,7 @@ solution_pdfName="solution"
 all_pdfName="exercise_solution"
 
 numeroNote=360
+notesPerLine=20
 
 cat > $test_ly_name << @EOF
 % Default layout:
@@ -29,6 +30,7 @@ cat > $test_ly_name << @EOF
   indent = #0
   line-width = #180 % #150
   ragged-last = ##t
+  #(layout-set-staff-size 26)
 }
 
 \paper {
@@ -37,8 +39,10 @@ cat > $test_ly_name << @EOF
 
 <<
   \new Staff \with { \omit TimeSignature } \new Voice = melody {
+    \clef "treble"
     \hide KeySignature
     \hide Stem
+    \time ${notesPerLine}/4
 @EOF
 
 cp $test_ly_name $solution_ly_name
@@ -48,21 +52,13 @@ cat >> $test_ly_name << @EOF
     \hide NoteHead
 @EOF
 
-# Only solutions
-nota="d' "
-for ((i=0; i<numeroNote; i=i+1)); do
-  echo -n "$nota" >> $test_ly_name
-  nota="d' "
-  if ((i % 4 == 0)); then
-          echo "" >> $test_ly_name
-  fi
-done
-echo "" >> $test_ly_name
+# Exercise needs aways the same note, so we generate fake ones
+bin/generaNote $numeroNote $num_seed 2 fake $notesPerLine >> $test_ly_name
 
-# Only exercize
-bin/generaNote $numeroNote $num_seed 2 note >> $solution_ly_name
+# Solution here
+bin/generaNote $numeroNote $num_seed 2 note $notesPerLine >> $solution_ly_name
 
-testo=`bin/generaNote $numeroNote $num_seed 2 name`
+testo=`bin/generaNote $numeroNote $num_seed 2 name 0`
 
 cat >> $test_ly_name << @EOF
   }
@@ -88,7 +84,7 @@ $testo }
 
 lilypond -o "$test_pdfName" "$test_ly_name"
 lilypond -o "$solution_pdfName" "$solution_ly_name"
-rm -f "$test_ly_name" "$solution_ly_name"
+#rm -f "$test_ly_name" "$solution_ly_name"
 
 which evince && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 # pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
