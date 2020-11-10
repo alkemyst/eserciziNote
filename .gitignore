@@ -2,6 +2,9 @@ test_*.ly
 solution_*.ly
 soluzione.pdf
 esercizio.pdf
+*.pdf
 *.back
-
 generaNote
+bin/*
+
+testProgram

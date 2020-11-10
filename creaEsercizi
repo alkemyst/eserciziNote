@@ -1,14 +1,16 @@
 #!/bin/bash
 
-data=`date +%s%N`
-test_ly_name="test_$data.ly"
-solution_ly_name="solution_$data.ly"
+seed=`date +%s%N`
+test_ly_name="test_$seed.ly"
+solution_ly_name="solution_$seed.ly"
 test_pdfName="esercizio"
 solution_pdfName="soluzione"
 all_pdfName="esercizio_soluzione"
 
 numeroNote=`printf "%d" $1`
 numeroNote=$(( numeroNote + 0 ))
+
+make
 
 if ((numeroNote == 0)); then
   numeroNote=360
@@ -18,7 +20,7 @@ cat > $test_ly_name << @EOF
 % Default layout:
 
 \header {
-  tagline = "Esercizio di scrittura di note generato il `date +%d.%m.%Y` alle `date +%H:%M`"  % removed
+  tagline = "Esercizio di scrittura #$seed"  % removed
 }
 
 \layout {
@@ -56,9 +58,9 @@ done
 echo "" >> $test_ly_name
 
 # Only exercize
-./generaNote $numeroNote $data 2 note >> $solution_ly_name
+bin/generaNote $numeroNote $seed 2 note >> $solution_ly_name
 
-testo=`./generaNote $numeroNote $data 2 name`
+testo=`bin/generaNote $numeroNote $seed 2 name`
 
 cat >> $test_ly_name << @EOF
   }
@@ -84,7 +86,7 @@ $testo }
 
 lilypond -o "$test_pdfName" "$test_ly_name"
 lilypond -o "$solution_pdfName" "$solution_ly_name"
-# rm -f "$test_ly_name" "$solution_ly_name"
+rm -f "$test_ly_name" "$solution_ly_name"
 
 # evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
