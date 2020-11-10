@@ -3,6 +3,8 @@ This is a script to generate notes to be written on a staff by students. Notes a
 
 This set of scrips works under linux (I have ubuntu).
 
+Currently only the treble clef is supported and solutions are written only for notes spanning a fixed range. Any feedback is welcome (including comments on fonts/size of notes, etc).
+
 # How to install
 Once you cloned this repository, you should run the following installation to make sure everyhting runs smoothly (installing lilypond and also the font I decided to use for the notes)
 
