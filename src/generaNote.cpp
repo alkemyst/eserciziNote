@@ -2,6 +2,7 @@
 #include <ctime>
 #include <iostream>
 #include <string>
+#include "encode_decode.cpp"
 
 std::string noteNames[] = {"Do", "Re", "Mi", "Fa", "Sol", "La", "Si"};
 std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
