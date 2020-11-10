@@ -8,3 +8,5 @@ generaNote
 bin/*
 
 testProgram
+test_binary_ternary
+test_complete

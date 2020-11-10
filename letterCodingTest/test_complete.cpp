@@ -4,15 +4,28 @@
 #include <string>
 #include <vector>
 
-const std::string vowels = "012";
-const std::string goodConsonants = "OI";
+const std::string vowels = "aeiouy";
+const std::string goodConsonants = "bcdfgjklmnpqrstvwxz";
+const std::string decimalDigits = "0123456789";
+
 const std::string separators = "-+.";
 
-std::string encode(const int originalInput, const std::string &myCode) {
+std::vector<const std::string *> allDigitSet;
+
+void prepareDigitSets() {
+  if (allDigitSet.size() == 0) {
+    allDigitSet.push_back(&vowels);
+    allDigitSet.push_back(&goodConsonants);
+    allDigitSet.push_back(&decimalDigits);
+  }
+}
+
+std::string encode(const int originalInput, const std::string &myCode,
+                   bool truncate = true) {
   int currentInput = originalInput;
-  std::vector<const std::string *> myDigits;
-  myDigits.push_back(&vowels);
-  myDigits.push_back(&goodConsonants);
+
+  prepareDigitSets();
+
   int nDigits, thisDigit, digitValue;
   std::string result = "";
   int compute = 0;
@@ -24,7 +37,7 @@ std::string encode(const int originalInput, const std::string &myCode) {
     if (separators.find(aLetter) != std::string::npos) {
       result = "-" + result;
     } else
-      for (const auto digits : myDigits) {
+      for (const auto digits : allDigitSet) {
         if (digits->find(aLetter) != std::string::npos) {
 
           // There are nDigits digits in this position
@@ -47,16 +60,18 @@ std::string encode(const int originalInput, const std::string &myCode) {
         }
       }
 #ifdef trunkation
-      if (currentInput == 0)
-        break;
+    if (currentInput == 0)
+      break;
 #endif
   }
 
-  // Final check to make sure the coding went right
-  if (originalInput != compute) {
-    std::cerr << "WARNING: you gave me " << originalInput
-              << " and I think I encoded " << compute << " using system '"
-              << myCode << "'" << std::endl;
+  if (!truncate) {
+    // Final check to make sure the coding went right
+    if (originalInput != compute) {
+      std::cerr << "WARNING: you gave me " << originalInput
+                << " and I think I encoded " << compute << " using system '"
+                << myCode << "'" << std::endl;
+    }
   }
   return result;
 }
@@ -71,13 +86,11 @@ int decode(const std::string &myCode) {
   int nDigits;
   int result = 0;
 
-  std::vector<const std::string *> myDigits;
-  myDigits.push_back(&vowels);
-  myDigits.push_back(&goodConsonants);
+  prepareDigitSets();
 
   for (int i = myCode.length() - 1; i >= 0; --i) {
     aLetter = myCode[i];
-    for (const auto digits : myDigits) {
+    for (const auto digits : allDigitSet) {
       if ((foundPos = digits->find(aLetter)) != std::string::npos) {
         nDigits = digits->length();
         valueString = std::to_string(nDigits) + "-" + valueString;
