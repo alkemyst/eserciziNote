@@ -17,7 +17,7 @@ solution_pdfName="solution"
 all_pdfName="exercise_solution"
 
 numeroNote=360
-notesPerLine=20
+notesPerLine=16
 
 cat > $test_ly_name << @EOF
 % Default layout:
