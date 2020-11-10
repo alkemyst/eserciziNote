@@ -16,8 +16,9 @@ test_pdfName="exercise"
 solution_pdfName="solution"
 all_pdfName="exercise_solution"
 
-numeroNote=360
 notesPerLine=16
+numberOfLines=40
+numeroNote=$((notesPerLine*numberOfLines))
 
 cat > $test_ly_name << @EOF
 % Default layout:
@@ -29,7 +30,6 @@ cat > $test_ly_name << @EOF
 \layout {
   indent = #0
   line-width = #180 % #150
-  ragged-last = ##t
   #(layout-set-staff-size 26)
 }
 
@@ -84,7 +84,7 @@ $testo }
 
 lilypond -o "$test_pdfName" "$test_ly_name"
 lilypond -o "$solution_pdfName" "$solution_ly_name"
-#rm -f "$test_ly_name" "$solution_ly_name"
+rm -f "$test_ly_name" "$solution_ly_name"
 
 which evince && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 # pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
