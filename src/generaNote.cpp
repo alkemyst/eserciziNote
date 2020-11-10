@@ -77,8 +77,8 @@ int main(int argc, char *argv[]) {
     nota = generateUniqueNote();
     printNote(nota, formatNote);
     if ((notesPerLine != 0) && (formatNote != "name") &&
-        ((i % 4) == (notesPerLine - 1)))
-      std::cout << " \\break";
+        ((i % notesPerLine) == (notesPerLine - 1)))
+      std::cout << " \\break ";
 
     if (i % 4 == 3)
       std::cout << std::endl;
