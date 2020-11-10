@@ -6,7 +6,7 @@
 std::string noteNames[] = {"Do", "Re", "Mi", "Fa", "Sol", "La", "Si"};
 std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
 std::string fullNoteCodes[] = {"<c' c'' >", "<d' d''>", "<e' e''>", "<f' f''>",
-                               "<g' g''>",  "<a' a''>", "<b b'>",   "<c' c''>"};
+                               "<g' g''>",  "<a a' a''>", "<b b' b''>", "<c' c''>"};
 
 int noRepeat = 1;
 int latestNotes[7] = {-1};

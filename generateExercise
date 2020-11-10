@@ -30,7 +30,7 @@ cat > $test_ly_name << @EOF
 \layout {
   indent = #0
   line-width = #180 % #150
-  #(layout-set-staff-size 26)
+  #(layout-set-staff-size __STAFF_SIZE__)
 }
 
 \paper {
@@ -47,6 +47,10 @@ cat > $test_ly_name << @EOF
 
 cp $test_ly_name $solution_ly_name
 sed -e "s/Exercise/Solution to exercise/g" -i $solution_ly_name
+
+# Setting staff size
+sed -e "s/__STAFF_SIZE__/26/g" -i $test_ly_name
+sed -e "s/__STAFF_SIZE__/18/g" -i $solution_ly_name
 
 cat >> $test_ly_name << @EOF
     \hide NoteHead
@@ -84,7 +88,6 @@ $testo }
 
 lilypond -o "$test_pdfName" "$test_ly_name"
 lilypond -o "$solution_pdfName" "$solution_ly_name"
-rm -f "$test_ly_name" "$solution_ly_name"
 
 which evince && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 # pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
