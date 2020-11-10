@@ -1,26 +1,28 @@
 #!/bin/bash
 
-seed=`date +%s%N`
-test_ly_name="test_$seed.ly"
-solution_ly_name="solution_$seed.ly"
+make
+
+if [ "$1" == "" ] ; then
+  seed=`date +%s%N`
+  text_seed=`./bin/timeToKey encode $seed`
+else
+  text_seed="$1"
+fi
+
+num_seed=`./bin/timeToKey decode $text_seed`
+test_ly_name="test_$text_seed.ly"
+solution_ly_name="solution_$text_seed.ly"
 test_pdfName="esercizio"
 solution_pdfName="soluzione"
 all_pdfName="esercizio_soluzione"
 
-numeroNote=`printf "%d" $1`
-numeroNote=$(( numeroNote + 0 ))
-
-make
-
-if ((numeroNote == 0)); then
-  numeroNote=360
-fi
+numeroNote=360
 
 cat > $test_ly_name << @EOF
 % Default layout:
 
 \header {
-  tagline = "Esercizio di scrittura #$seed"  % removed
+  tagline = "Esercizio di scrittura $text_seed"  % removed
 }
 
 \layout {
@@ -58,9 +60,9 @@ done
 echo "" >> $test_ly_name
 
 # Only exercize
-bin/generaNote $numeroNote $seed 2 note >> $solution_ly_name
+bin/generaNote $numeroNote $num_seed 2 note >> $solution_ly_name
 
-testo=`bin/generaNote $numeroNote $seed 2 name`
+testo=`bin/generaNote $numeroNote $num_seed 2 name`
 
 cat >> $test_ly_name << @EOF
   }

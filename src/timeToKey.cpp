@@ -5,7 +5,9 @@
 #include <vector>
 
 const std::string vowels = "aeiouy";
+const std::string vowelsCaps = "AEIOUY";
 const std::string goodConsonants = "bcdfgjklmnpqrstvwxz";
+const std::string goodConsonantsCaps = "BCDFGJKLMNPQRSTVWXZ";
 const std::string decimalDigits = "0123456789";
 const std::string separators = "-+.";
 
@@ -19,15 +21,16 @@ void prepareDigitSets() {
   }
 }
 
-std::string encode(const int originalInput, const std::string &myCode,
+std::string encode(const unsigned long originalInput, const std::string &myCode,
                    bool truncate = true) {
-  int currentInput = originalInput;
+  unsigned long currentInput = originalInput;
 
   prepareDigitSets();
 
-  int nDigits, thisDigit, digitValue;
+  int nDigits, thisDigit;
+  unsigned long digitValue;
   std::string result = "";
-  int compute = 0;
+  unsigned long compute = 0;
   char aLetter;
 
   digitValue = 1;
@@ -73,15 +76,15 @@ std::string encode(const int originalInput, const std::string &myCode,
   return result;
 }
 
-int decode(const std::string &myCode) {
+unsigned long decode(const std::string &myCode) {
 
   char aLetter;
   std::string valueString = "";
 
   size_t foundPos;
-  int digitValue = 1;
+  unsigned long digitValue = 1;
   int nDigits;
-  int result = 0;
+  unsigned long result = 0;
 
   prepareDigitSets();
 
@@ -112,16 +115,16 @@ int main(int argc, char *argv[]) {
 
   std::string command = argv[1];
   if (command == "encode") {
-    int aSeed = atoi(argv[2]);
+    unsigned long aSeed = std::stol(argv[2], nullptr, 10);
     if (aSeed == 0) {
       std::cerr << "Error: the seed is zero!" << std::endl;
       return -1;
     }
-    std::string newCode = encode(aSeed, "sasa-9999-sasa");
+    std::string newCode = encode(aSeed, "zyzy-zyzy-zyz");
     std::cout << newCode << std::endl;
   } else if (command == "decode") {
     std::string myCode = argv[2];
-    int resultingCode = decode(myCode);
+    unsigned long resultingCode = decode(myCode);
     std::cout << resultingCode << std::endl;
   } else {
     std::cerr << "Error: unknown command '" << command
@@ -131,4 +134,3 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-

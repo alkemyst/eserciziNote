@@ -2,7 +2,6 @@
 #include <ctime>
 #include <iostream>
 #include <string>
-#include "encode_decode.cpp"
 
 std::string noteNames[] = {"Do", "Re", "Mi", "Fa", "Sol", "La", "Si"};
 std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
@@ -59,7 +58,7 @@ int main(int argc, char *argv[]) {
     return -1;
   }
   int nNotes = atoi(argv[1]);
-  int timerSeed = atoi(argv[2]);
+  unsigned long timerSeed = std::stol(argv[2], nullptr, 10);
   noRepeat = atoi(argv[3]);
   if (noRepeat < 0)
     noRepeat = 0;
@@ -69,7 +68,6 @@ int main(int argc, char *argv[]) {
 
   srand(timerSeed);
 
-  double randNum;
   int nota;
   for (int i = 0; i < nNotes; ++i) {
     nota = generateUniqueNote();

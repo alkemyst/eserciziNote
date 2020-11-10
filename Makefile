@@ -2,10 +2,10 @@
 all: bin/generaNote bin/timeToKey
 
 bin/generaNote: src/generaNote.cpp
-	g++ src/generaNote.cpp -o bin/generaNote
+	g++ -fmax-errors=1 -Wall -Werror -std=c++14 src/generaNote.cpp -o bin/generaNote
 
 bin/timeToKey: src/timeToKey.cpp
-	g++ src/timeToKey.cpp -o bin/timeToKey
+	g++ -fmax-errors=1 -Wall -Werror -std=c++14 src/timeToKey.cpp -o bin/timeToKey
 
 test: generaNote
 	bin/generaNote 1000000 | tr ' ' '\n' | egrep . | sort | uniq -c
