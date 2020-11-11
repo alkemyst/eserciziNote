@@ -2,14 +2,47 @@
 
 make
 
-if [ "$1" == "" ] ; then
-  seed=`date +%s%N`
-  text_seed=`./bin/timeToKey encode $seed`
+binDir=./bin
+
+clefArg="$1"
+seedArg="$2"
+
+function syntax() {
+  echo "Syntax: $0 [bass|treble] [id]"
+  echo "Optional arguments:"
+  echo "  The first argument defines the key (treble is the default)"
+  echo "  Second argument [id] is used to reproduce an exercise and its solutions"
+}
+
+# Clef argument
+[ "$clefArg" == "" ] && clefArg="treble"
+if [ "$clefArg" == "--help" ] ; then
+  syntax
+  return 0
+elif [ "$clefArg" == "treble" ] ; then
+  realNotes="notes_treble"
+  fakeNotes="fake_treble"
+  clef="treble"
+elif [ "$clefArg" == "bass" ] ; then
+  realNotes="notes_bass"
+  fakeNotes="fake_bass"
+  clef="bass"
 else
-  text_seed="$1"
+  echo "Unknown clef: '$clefArg'"
+  syntax
+  return -1
 fi
 
-num_seed=`./bin/timeToKey decode $text_seed`
+# Seed (key or id) argument
+if [ "$seedArg" == "" ] ; then
+  seed=`date +%s%N`
+  text_seed=`${binDir}/timeToKey encode $seed`
+else
+  text_seed="$seedArg"
+fi
+
+
+num_seed=`${binDir}/timeToKey decode $text_seed`
 test_ly_name="test_$text_seed.ly"
 solution_ly_name="solution_$text_seed.ly"
 test_pdfName="exercise"
@@ -24,7 +57,7 @@ cat > $test_ly_name << @EOF
 % Default layout:
 
 \header {
-  tagline = "Exercise n. $text_seed"
+  tagline = "Exercise $text_seed"
 }
 
 \layout {
@@ -39,7 +72,7 @@ cat > $test_ly_name << @EOF
 
 <<
   \new Staff \with { \omit TimeSignature } \new Voice = melody {
-    \clef "treble"
+    \clef "$clef"
     \hide KeySignature
     \hide Stem
     \time ${notesPerLine}/4
@@ -57,12 +90,12 @@ cat >> $test_ly_name << @EOF
 @EOF
 
 # Exercise needs aways the same note, so we generate fake ones
-bin/generaNote $numeroNote $num_seed 2 fake $notesPerLine >> $test_ly_name
+${binDir}/generaNote $numeroNote $num_seed 2 $fakeNotes $notesPerLine >> $test_ly_name
 
 # Solution here
-bin/generaNote $numeroNote $num_seed 2 note $notesPerLine >> $solution_ly_name
+${binDir}/generaNote $numeroNote $num_seed 2 $realNotes $notesPerLine >> $solution_ly_name
 
-testo=`bin/generaNote $numeroNote $num_seed 2 name 0`
+testo=`${binDir}/generaNote $numeroNote $num_seed 2 name 0`
 
 cat >> $test_ly_name << @EOF
   }
