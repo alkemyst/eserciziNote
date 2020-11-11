@@ -22,7 +22,22 @@ Whenever you want to generate an exercise, just run
 ```
 Two music sheets will be generated, one with an exercise, and another one with its solution. Both will be open in ``evince``, provided that it is installed on your computer. Otherwise you will find two pdf files in the directory, named ``exercise.pdf`` and ``exercise_solution.pdf``.
 
-If you look closely at the bottom of the exercise page, you will find a code (like ``xipi-ceru-jax``). That is generated randomy when the exercise is created and can be used to reproduce exactly the same exercise sheet, with its solutions. In order to do that, just run
+## Treble and bass clefs
+To generate a bass clef exercise instead of a bass clef one, you just need to add an argument
 ```
-./generateExercise xipi-ceru-jax
+./generateExercise bass
 ```
+You might also specify the treble clef explicitly, as in
+```
+./generateExercise treble
+```
+
+If you look closely at the bottom of the exercise page, you will find a code (like ``xipi-ceru-jax``). That is generated randomy when the exercise is created and can be used to reproduce exactly the same exercise sheet, with its solutions (in any clef you like). In order to do that, just run
+```
+./generateExercise treble xipi-ceru-jax
+```
+or
+```
+./generateExercise bass xipi-ceru-jax
+```
+

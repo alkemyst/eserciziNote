@@ -1,6 +1,6 @@
 #!/bin/bash
 
-make
+make > /dev/null
 
 binDir=./bin
 
@@ -18,7 +18,7 @@ function syntax() {
 [ "$clefArg" == "" ] && clefArg="treble"
 if [ "$clefArg" == "--help" ] ; then
   syntax
-  return 0
+  exit 0
 elif [ "$clefArg" == "treble" ] ; then
   realNotes="notes_treble"
   fakeNotes="fake_treble"
@@ -30,7 +30,7 @@ elif [ "$clefArg" == "bass" ] ; then
 else
   echo "Unknown clef: '$clefArg'"
   syntax
-  return -1
+  exit -1
 fi
 
 # Seed (key or id) argument
@@ -55,6 +55,7 @@ numeroNote=$((notesPerLine*numberOfLines))
 
 cat > $test_ly_name << @EOF
 % Default layout:
+\version "2.20.0"
 
 \header {
   tagline = "Exercise $text_seed"
@@ -113,11 +114,11 @@ cat >> $solution_ly_name << @EOF
 >>
 @EOF
 
-lilypond -o "$test_pdfName" "$test_ly_name"
-lilypond -o "$solution_pdfName" "$solution_ly_name"
+lilypond -o "$test_pdfName" "$test_ly_name" 2> /dev/null
+lilypond -o "$solution_pdfName" "$solution_ly_name" 2> /dev/null
 rm -f "$test_ly_name" "$solution_ly_name"
 
-which evince && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
+which evince > /dev/null && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 # pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
 # rm -f "$test_pdfName.pdf" "$solution_pdfName.pdf"
 # evince "$all_pdfName.pdf"
