@@ -8,10 +8,11 @@ clefArg="$1"
 seedArg="$2"
 
 function syntax() {
-  echo "Syntax: $0 [bass|treble] [id]"
+  echo "Syntax: $0 [bass|treble] [id] [nPages]"
   echo "Optional arguments:"
-  echo "  The first argument defines the key (treble is the default)"
-  echo "  Second argument [id] is used to reproduce an exercise and its solutions"
+  echo "  First argument defines the key (treble is the default)"
+  echo "  Second argument [id] is used to reproduce an exercise and its solutions. Set to 0 to generate a random one"
+  echo "  Thirs argument [nPages] tells how many pages of exercise to generate"
 }
 
 # Clef argument
@@ -34,13 +35,16 @@ else
 fi
 
 # Seed (key or id) argument
-if [ "$seedArg" == "" ] ; then
+if [ "$seedArg" == "" ] || [ "$seedArg" == "0" ] ; then
   seed=`date +%s%N`
   text_seed=`${binDir}/timeToKey encode $seed`
 else
   text_seed="$seedArg"
 fi
 
+# Number of pages
+nPages=$(($3))
+[ "$nPages" == "0" ] && nPages=1
 
 num_seed=`${binDir}/timeToKey decode $text_seed`
 test_ly_name="test_$text_seed.ly"
@@ -49,27 +53,42 @@ test_pdfName="exercise"
 solution_pdfName="solution"
 all_pdfName="exercise_solution"
 
-notesPerLine=16
+size="big"
+if [ "$size" == "big" ] ; then
+  notesPerLine=10
+else
+  notesPerLine=16
+fi
 numberOfLines=13
-numeroNote=$((notesPerLine*numberOfLines))
+numeroNote=$((notesPerLine*numberOfLines*nPages))
 
 cat > $test_ly_name << @EOF
 % Default layout:
 \version "2.20.0"
 
 \header {
-  tagline = "Exercise $text_seed"
+  tagline = ""
 }
 
 \layout {
   indent = #0
-  line-width = #180 % #150
+  line-width = #180
   #(layout-set-staff-size __STAFF_SIZE__)
 }
 
 \paper {
-  bottom-margin = 1\cm
+  %bottom-margin = 1\cm
+  last-bottom-spacing.basic-distance = #14
+  oddHeaderMarkup = ""
+  evenHeaderMarkup = ""
+  oddFooterMarkup = \markup {
+  \fill-line {
+    "Exercise $text_seed" \line {"Page" \fromproperty #'page:page-number-string }
+   }
+  }
+  evenFooterMarkup = \oddFooterMarkup
 }
+
 
 <<
   \new Staff \with { \omit TimeSignature } \new Voice = melody {
@@ -116,10 +135,7 @@ cat >> $solution_ly_name << @EOF
 
 lilypond -o "$test_pdfName" "$test_ly_name" 2> /dev/null
 lilypond -o "$solution_pdfName" "$solution_ly_name" 2> /dev/null
-rm -f "$test_ly_name" "$solution_ly_name"
+# rm -f "$test_ly_name" "$solution_ly_name"
 
 which evince > /dev/null && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
-# pdftk "$test_pdfName.pdf" "$solution_pdfName.pdf" cat output "$all_pdfName.pdf"
-# rm -f "$test_pdfName.pdf" "$solution_pdfName.pdf"
-# evince "$all_pdfName.pdf"
 
