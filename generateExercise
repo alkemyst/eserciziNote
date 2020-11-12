@@ -135,7 +135,7 @@ cat >> $solution_ly_name << @EOF
 
 lilypond -o "$test_pdfName" "$test_ly_name" 2> /dev/null
 lilypond -o "$solution_pdfName" "$solution_ly_name" 2> /dev/null
-# rm -f "$test_ly_name" "$solution_ly_name"
+rm -f "$test_ly_name" "$solution_ly_name"
 
 which evince > /dev/null && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
 
