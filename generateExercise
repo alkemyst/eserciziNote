@@ -6,13 +6,18 @@ binDir=./bin
 
 clefArg="$1"
 seedArg="$2"
+pagesArg="$3"
+sizeArg="$4"
 
 function syntax() {
-  echo "Syntax: $0 [bass|treble] [id] [nPages]"
+  echo "Syntax: $0 --help"
+  echo "  Prints this help"
+  echo "Syntax: $0 [bass|treble] [id] [nPages] [size]"
   echo "Optional arguments:"
   echo "  First argument defines the key (treble is the default)"
   echo "  Second argument [id] is used to reproduce an exercise and its solutions. Set to 0 to generate a random one"
-  echo "  Thirs argument [nPages] tells how many pages of exercise to generate"
+  echo "  Third argument [nPages] tells how many pages of exercise to generate"
+  echo "  Fourth argument [size] can be wither 'big' or 'small' default is 'big'"
 }
 
 # Clef argument
@@ -43,8 +48,15 @@ else
 fi
 
 # Number of pages
-nPages=$(($3))
+nPages=$(($pagesArg))
 [ "$nPages" == "0" ] && nPages=1
+
+# Size
+if [ "$sizeArg" == "small" ]; then
+  size="small"
+else
+  size="big"
+fi
 
 num_seed=`${binDir}/timeToKey decode $text_seed`
 test_ly_name="test_$text_seed.ly"
@@ -53,11 +65,14 @@ test_pdfName="exercise"
 solution_pdfName="solution"
 all_pdfName="exercise_solution"
 
-size="big"
 if [ "$size" == "big" ] ; then
   notesPerLine=10
+  staff_size_exe=26
+  staff_size_slu=18
 else
   notesPerLine=16
+  staff_size_exe=20
+  staff_size_slu=14
 fi
 numberOfLines=13
 numeroNote=$((notesPerLine*numberOfLines*nPages))
@@ -102,8 +117,8 @@ cp $test_ly_name $solution_ly_name
 sed -e "s/Exercise/Solution to exercise/g" -i $solution_ly_name
 
 # Setting staff size
-sed -e "s/__STAFF_SIZE__/26/g" -i $test_ly_name
-sed -e "s/__STAFF_SIZE__/18/g" -i $solution_ly_name
+sed -e "s/__STAFF_SIZE__/$staff_size_exe/g" -i $test_ly_name
+sed -e "s/__STAFF_SIZE__/$staff_size_slu/g" -i $solution_ly_name
 
 cat >> $test_ly_name << @EOF
     \hide NoteHead
