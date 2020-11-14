@@ -8,6 +8,7 @@ clefArg="$1"
 seedArg="$2"
 pagesArg="$3"
 sizeArg="$4"
+readWriteArg="$5"
 
 realNotes=""
 fakeNotes=""
@@ -16,14 +17,18 @@ clefNotes=""
 function syntax() {
   echo "Syntax: $0 --help"
   echo "  Prints this help"
-  echo "Syntax: $0 [bass|treble|grandstaff] [id] [nPages] [size]"
+  echo ""
+  echo "Syntax: $0 [bass|treble|grandstaff] [id] [nPages] [size] [write|read]"
   echo "Optional arguments:"
-  echo "  First argument defines the key (treble is the default)"
-  echo "  Second argument [id] is used to reproduce an exercise. Set to 0 to generate a random one"
-  echo "  Third argument [nPages] tells how many pages of exercise to generate"
-  echo "  Fourth argument [size] can be wither 'big' or 'small' default is 'big'"
+  echo "  First argument:  defines the clef (treble is the default)"
+  echo "  Second argument: [id] is used to reproduce an exercise. Set to 0 to generate a random one"
+  echo "  Third argument:  [nPages] tells how many pages of exercise to generate"
+  echo "  Fourth argument: [size] can be wither 'big' or 'small' default is 'big'"
+  echo "  Fifth argument:  defines whether it's a reading or writing exercise."
+  echo "                   Writing exercise is the default"
 }
 
+# Clef definition
 function setClef() {
   myClefArg="$1"
   if [ "$myClefArg" == "treble" ] ; then
@@ -42,8 +47,11 @@ function setClef() {
   return 0
 }
 
+#
 ## lilypond-generating functions
+#
 
+# Header of .ly file
 function generateHeader() {
 cat << @EOF
 % Default layout:
@@ -75,17 +83,21 @@ cat << @EOF
 @EOF
 }
 
+# A single staff
 function generateStaff() {
 
 # Exercise needs aways the same note, so we generate fake ones
 # Whereas solutions need "real" notes
 whichOne="$1"
-if [ "$whichOne" == "exercise" ] ; then
+if [ "$whichOne" == "writeExercise" ] ; then
   whichNotes="$fakeNotes"
   hideNotes="\\hide NoteHead"
-else
+elif [ "$whichOne" == "readExercise" ] ; then
   whichNotes="$realNotes"
   hideNotes=""
+else
+  echo "Error: unknown staff type: '$whichOne'"
+  exit -1
 fi
 
 cat << @EOF
@@ -100,6 +112,7 @@ cat << @EOF
 echo '}'
 }
 
+# The lyrics (note names)
 function generateLyrics() {
 testo=`${binDir}/generaNote $numeroNote $num_seed 2 name 0`
 
@@ -113,12 +126,20 @@ $testo
 }
 
 
+#
+#  Parsing arguments
+#
+
 # Clef argument
-[ "$clefArg" == "" ] && clefArg="treble"
+# First argument could be also --help
 if [ "$clefArg" == "--help" ] ; then
   syntax
   exit 0
 fi
+
+# Otherwise the default clef is 'treble'. Of course it is
+[ "$clefArg" == "" ] && clefArg="treble"
+[ "$clefArg" == "grand" ] && clefArg="grandstaff"
 if [ "$clefArg" == "grandstaff" ] ; then 
   setClef "treble"
 else
@@ -140,13 +161,26 @@ nPages=$(($pagesArg))
 # Size
 if [ "$sizeArg" == "small" ]; then
   size="small"
-else
+elif [ "$sizeArg" == "" ] || [ "$sizeArg" == "big" ]; then
   size="big"
+else
+  echo "Error: unknown size selection argument: '$sizeArg'"
+  exit -1
+fi
+
+# Read/write selection
+if [ "$readWriteArg" == "read" ] ; then
+  whichExercise="readExercise"
+elif [ "$readWriteArg" == "" ] || [ "$readWriteArg" == "write" ] ; then
+  whichExercise="writeExercise"
+else
+  echo "Error: unknown read/write selection argument: '$readWriteArg'"
+  exit -1
 fi
 
 num_seed=`${binDir}/timeToKey decode $text_seed`
 test_ly_name="test_$text_seed.ly"
-test_pdf_name="exercise"
+test_pdf_name="$whichExercise"
 
 if [ "$size" == "big" ] ; then
   notesPerLine=10
@@ -190,15 +224,17 @@ fi
 echo "<<" >> $test_ly_name
 
 # Then the first staff
-generateStaff "exercise" >> $test_ly_name
+generateStaff "$whichExercise" >> $test_ly_name
 
-# Then the "lyrics"
-generateLyrics >> $test_ly_name
+# Then the "lyrics" (if it's a writing exercise)
+if [ "$whichExercise" == "writeExercise" ] ; then
+  generateLyrics >> $test_ly_name
+fi
 
 # If grandstaff we need the bass line too
 if [ "$clefArg" == "grandstaff" ] ; then
   setClef "bass"
-  generateStaff "exercise" >> $test_ly_name
+  generateStaff "$whichExercise" >> $test_ly_name
 fi
 
 # Then we close everything
@@ -213,7 +249,7 @@ if [ "$good" == "no" ]; then
   echo You can try debugging by running the following command
   echo lilypond -o \""$test_pdf_name"\" \""$test_ly_name"\"
 else
-  # rm -f "$test_ly_name"
+  rm -f "$test_ly_name"
   which evince > /dev/null && evince "$test_pdf_name.pdf" &
 fi
 
