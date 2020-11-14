@@ -8,35 +8,142 @@ clefArg="$1"
 seedArg="$2"
 pagesArg="$3"
 sizeArg="$4"
+readWriteArg="$5"
+
+realNotes=""
+fakeNotes=""
+clefNotes=""
 
 function syntax() {
   echo "Syntax: $0 --help"
   echo "  Prints this help"
-  echo "Syntax: $0 [bass|treble] [id] [nPages] [size]"
+  echo ""
+  echo "Syntax: $0 [bass|treble|grandstaff] [id] [nPages] [size] [write|read]"
   echo "Optional arguments:"
-  echo "  First argument defines the key (treble is the default)"
-  echo "  Second argument [id] is used to reproduce an exercise and its solutions. Set to 0 to generate a random one"
-  echo "  Third argument [nPages] tells how many pages of exercise to generate"
-  echo "  Fourth argument [size] can be wither 'big' or 'small' default is 'big'"
+  echo "  First argument:  defines the clef (treble is the default)"
+  echo "  Second argument: [id] is used to reproduce an exercise. Set to 0 to generate a random one"
+  echo "  Third argument:  [nPages] tells how many pages of exercise to generate"
+  echo "  Fourth argument: [size] can be wither 'big' or 'small' default is 'big'"
+  echo "  Fifth argument:  defines whether it's a reading or writing exercise."
+  echo "                   Writing exercise is the default"
 }
 
+# Clef definition
+function setClef() {
+  myClefArg="$1"
+  if [ "$myClefArg" == "treble" ] ; then
+    realNotes="notes_treble"
+    fakeNotes="fake_treble"
+    clefNotes="treble"
+  elif [ "$myClefArg" == "bass" ] ; then
+    realNotes="notes_bass"
+    fakeNotes="fake_bass"
+    clefNotes="bass"
+  else
+    echo "Unknown clef: '$myClefArg'"
+    syntax
+    return -1
+  fi
+  return 0
+}
+
+#
+## lilypond-generating functions
+#
+
+# Header of .ly file
+function generateHeader() {
+cat << @EOF
+% Default layout:
+\version "2.20.0"
+
+\header {
+  tagline = ""
+}
+
+\layout {
+  indent = #0
+  line-width = #180
+  #(layout-set-staff-size $staff_size)
+}
+
+\paper {
+  %bottom-margin = 1\cm
+  last-bottom-spacing.basic-distance = #14
+  oddHeaderMarkup = ""
+  evenHeaderMarkup = ""
+  oddFooterMarkup = \markup {
+  \fill-line {
+    "Exercise $text_seed" \line {"Page" \fromproperty #'page:page-number-string }
+   }
+  }
+  evenFooterMarkup = \oddFooterMarkup
+}
+
+@EOF
+}
+
+# A single staff
+function generateStaff() {
+
+# Exercise needs aways the same note, so we generate fake ones
+# Whereas solutions need "real" notes
+whichOne="$1"
+if [ "$whichOne" == "writeExercise" ] ; then
+  whichNotes="$fakeNotes"
+  hideNotes="\\hide NoteHead"
+elif [ "$whichOne" == "readExercise" ] ; then
+  whichNotes="$realNotes"
+  hideNotes=""
+else
+  echo "Error: unknown staff type: '$whichOne'"
+  exit -1
+fi
+
+cat << @EOF
+  \new Staff \with { \omit TimeSignature } \new Voice = melody {
+    \clef "$clefNotes"
+    \hide KeySignature
+    \hide Stem
+    \time ${notesPerLine}/4
+    $hideNotes
+@EOF
+    ${binDir}/generaNote $numeroNote $num_seed 2 $whichNotes $notesPerLine
+echo '}'
+}
+
+# The lyrics (note names)
+function generateLyrics() {
+testo=`${binDir}/generaNote $numeroNote $num_seed 2 name 0`
+
+cat >> $test_ly_name << @EOF
+  \new Lyrics \lyricsto melody {
+  \override LyricText.font-name = #"Source Serif Pro"
+  \override LyricText.font-size = #-2 
+$testo
+  }
+@EOF
+}
+
+
+#
+#  Parsing arguments
+#
+
 # Clef argument
-[ "$clefArg" == "" ] && clefArg="treble"
+# First argument could be also --help
 if [ "$clefArg" == "--help" ] ; then
   syntax
   exit 0
-elif [ "$clefArg" == "treble" ] ; then
-  realNotes="notes_treble"
-  fakeNotes="fake_treble"
-  clef="treble"
-elif [ "$clefArg" == "bass" ] ; then
-  realNotes="notes_bass"
-  fakeNotes="fake_bass"
-  clef="bass"
+fi
+
+# Otherwise the default clef is 'treble'. Of course it is
+[ "$clefArg" == "" ] && clefArg="treble"
+[ "$clefArg" == "grand" ] && clefArg="grandstaff"
+if [ "$clefArg" == "grandstaff" ] ; then 
+  setClef "treble"
 else
-  echo "Unknown clef: '$clefArg'"
-  syntax
-  exit -1
+  setClef "$clefArg" || exit -1
 fi
 
 # Seed (key or id) argument
@@ -54,103 +161,95 @@ nPages=$(($pagesArg))
 # Size
 if [ "$sizeArg" == "small" ]; then
   size="small"
-else
+elif [ "$sizeArg" == "" ] || [ "$sizeArg" == "big" ]; then
   size="big"
+else
+  echo "Error: unknown size selection argument: '$sizeArg'"
+  exit -1
+fi
+
+# Read/write selection
+if [ "$readWriteArg" == "read" ] ; then
+  whichExercise="readExercise"
+elif [ "$readWriteArg" == "" ] || [ "$readWriteArg" == "write" ] ; then
+  whichExercise="writeExercise"
+else
+  echo "Error: unknown read/write selection argument: '$readWriteArg'"
+  exit -1
 fi
 
 num_seed=`${binDir}/timeToKey decode $text_seed`
 test_ly_name="test_$text_seed.ly"
-solution_ly_name="solution_$text_seed.ly"
-test_pdfName="exercise"
-solution_pdfName="solution"
-all_pdfName="exercise_solution"
+test_pdf_name="$whichExercise"
 
 if [ "$size" == "big" ] ; then
   notesPerLine=10
-  staff_size_exe=26
-  staff_size_slu=18
+  staff_size=26
+  # for the solution it would be staff_size=18
 else
   notesPerLine=16
-  staff_size_exe=20
-  staff_size_slu=14
+  staff_size=20
+  # for the solution it would be staff_size=14
 fi
-numberOfLines=13
+
+if [ "$clefArg" == "grandstaff" ] ; then 
+  if [ "$size" == "big" ] ; then
+    numberOfLines=7
+  else 
+    numberOfLines=8
+  fi
+else
+  numberOfLines=13
+fi
 numeroNote=$((notesPerLine*numberOfLines*nPages))
 
-cat > $test_ly_name << @EOF
-% Default layout:
-\version "2.20.0"
-
-\header {
-  tagline = ""
-}
-
-\layout {
-  indent = #0
-  line-width = #180
-  #(layout-set-staff-size __STAFF_SIZE__)
-}
-
-\paper {
-  %bottom-margin = 1\cm
-  last-bottom-spacing.basic-distance = #14
-  oddHeaderMarkup = ""
-  evenHeaderMarkup = ""
-  oddFooterMarkup = \markup {
-  \fill-line {
-    "Exercise $text_seed" \line {"Page" \fromproperty #'page:page-number-string }
-   }
-  }
-  evenFooterMarkup = \oddFooterMarkup
-}
+# echo number of pages is $nPages
+# echo notes per line is $notesPerLine
+# echo number of line per page is $numberOfLines
+# echo total number of lines is $((numberOfLines*nPages))
+# echo generating $numeroNote notes
 
 
-<<
-  \new Staff \with { \omit TimeSignature } \new Voice = melody {
-    \clef "$clef"
-    \hide KeySignature
-    \hide Stem
-    \time ${notesPerLine}/4
-@EOF
+# Let's start to generate the actual
+# lilypond file
 
-cp $test_ly_name $solution_ly_name
-sed -e "s/Exercise/Solution to exercise/g" -i $solution_ly_name
+generateHeader > $test_ly_name
 
-# Setting staff size
-sed -e "s/__STAFF_SIZE__/$staff_size_exe/g" -i $test_ly_name
-sed -e "s/__STAFF_SIZE__/$staff_size_slu/g" -i $solution_ly_name
+# If grandstaff we need to open it
+if [ "$clefArg" == "grandstaff" ] ; then
+  echo "\\new GrandStaff" >> $test_ly_name
+fi
 
+# We open a system anyway
+echo "<<" >> $test_ly_name
+
+# Then the first staff
+generateStaff "$whichExercise" >> $test_ly_name
+
+# Then the "lyrics" (if it's a writing exercise)
+if [ "$whichExercise" == "writeExercise" ] ; then
+  generateLyrics >> $test_ly_name
+fi
+
+# If grandstaff we need the bass line too
+if [ "$clefArg" == "grandstaff" ] ; then
+  setClef "bass"
+  generateStaff "$whichExercise" >> $test_ly_name
+fi
+
+# Then we close everything
 cat >> $test_ly_name << @EOF
-    \hide NoteHead
-@EOF
-
-# Exercise needs aways the same note, so we generate fake ones
-${binDir}/generaNote $numeroNote $num_seed 2 $fakeNotes $notesPerLine >> $test_ly_name
-
-# Solution here
-${binDir}/generaNote $numeroNote $num_seed 2 $realNotes $notesPerLine >> $solution_ly_name
-
-testo=`${binDir}/generaNote $numeroNote $num_seed 2 name 0`
-
-cat >> $test_ly_name << @EOF
-  }
-  \new Lyrics \lyricsto melody {
-  \override LyricText.font-name = #"Source Serif Pro"
-%  \override LyricText.font-name = #"Equity Text A"
-%  \override LyricText.font-name = #"Sunday Comics BB"
-  \override LyricText.font-size = #-2 
-$testo }
 >>
 @EOF
 
-cat >> $solution_ly_name << @EOF
-  }
->>
-@EOF
+lilypond -o "$test_pdf_name" "$test_ly_name" 2>/dev/null && good=yes || good=no
 
-lilypond -o "$test_pdfName" "$test_ly_name" 2> /dev/null
-lilypond -o "$solution_pdfName" "$solution_ly_name" 2> /dev/null
-rm -f "$test_ly_name" "$solution_ly_name"
-
-which evince > /dev/null && evince "$test_pdfName.pdf" "$solution_pdfName.pdf" &
+if [ "$good" == "no" ]; then
+  echo Error: there was some problem with lilypond
+  echo You can try debugging by running the following command
+  echo lilypond -o \""$test_pdf_name"\" \""$test_ly_name"\"
+else
+  rm -f "$test_ly_name"
+  which evince > /dev/null && evince "$test_pdf_name.pdf" &
+fi
 
