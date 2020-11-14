@@ -11,8 +11,8 @@ std::string fullNoteCodes[] = {"<c' c'' >",  "<d' d''>", "<e' e''>",
 std::string fullNoteCodes_bass[] = {"<c, c c'>",  "<d, d d'>", "<e, e>",
                                     "<f, f>",   "<g, g>", "<a, a>",
                                     "<b, b>"};
-std::string fakeCode = "s";
-std::string fakeCode_bass = "s";
+std::string fakeCode = "d'";
+std::string fakeCode_bass = "d";
 
 int noRepeat = 1;
 int latestNotes[7] = {-1};
