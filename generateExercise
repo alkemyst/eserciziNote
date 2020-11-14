@@ -157,10 +157,23 @@ else
   staff_size=20
   # for the solution it would be staff_size=14
 fi
-numberOfLines=13
+
+if [ "$clefArg" == "grandstaff" ] ; then 
+  if [ "$size" == "big" ] ; then
+    numberOfLines=7
+  else 
+    numberOfLines=8
+  fi
+else
+  numberOfLines=13
+fi
 numeroNote=$((notesPerLine*numberOfLines*nPages))
 
-
+# echo number of pages is $nPages
+# echo notes per line is $notesPerLine
+# echo number of line per page is $numberOfLines
+# echo total number of lines is $((numberOfLines*nPages))
+# echo generating $numeroNote notes
 
 
 # Let's start to generate the actual
@@ -185,17 +198,22 @@ generateLyrics >> $test_ly_name
 # If grandstaff we need the bass line too
 if [ "$clefArg" == "grandstaff" ] ; then
   setClef "bass"
-  generateStadd "exercise" >> $test_ly_name
+  generateStaff "exercise" >> $test_ly_name
 fi
 
 # Then we close everything
 cat >> $test_ly_name << @EOF
-  }
 >>
 @EOF
 
-lilypond -o "$test_pdf_name" "$test_ly_name" 2> /dev/null
-# rm -f "$test_ly_name" "$solution_ly_name"
+lilypond -o "$test_pdf_name" "$test_ly_name" 2>/dev/null && good=yes || good=no
 
-which evince > /dev/null && evince "$test_pdf_name.pdf" &
+if [ "$good" == "no" ]; then
+  echo Error: there was some problem with lilypond
+  echo You can try debugging by running the following command
+  echo lilypond -o \""$test_pdf_name"\" \""$test_ly_name"\"
+else
+  # rm -f "$test_ly_name"
+  which evince > /dev/null && evince "$test_pdf_name.pdf" &
+fi
 
