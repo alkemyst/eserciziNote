@@ -3,35 +3,37 @@
 #include <iostream>
 #include <map>
 #include <string>
+#include <vector>
 
-std::string noteNames_en[] = {"\" C \"", "\" D \"", "\" E \"", "\" F \"",
-                              "\" G \"", "\" A \"", "\" B \""};
-std::string noteNames[] = {"\" do \"",  "\" re \"", "\" mi \"", "\" fa \"",
-                           "\" sol \"", "\" la \"", "\" si \""};
-std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
-std::string fullNoteCodes[] = {"<c' c'' >", "<d' d''>", "<e' e''>",
-                               "<f' f''>",  "<g' g''>", "<a a' a''>",
-                               "<b b' b''>"};
-std::string fullNoteCodes_bass[] = {
-    "<c, c c'>", "<d, d d'>", "<e, e>", "<f, f>", "<g, g>", "<a, a>", "<b, b>"};
-std::string fakeCodes[] = {"d'"};
-std::string fakeCodes_bass[] = {"d"};
+typedef std::vector<std::string> noteVector;
+
+noteVector noteNames_en = {"\" C \"", "\" D \"", "\" E \"", "\" F \"",
+                           "\" G \"", "\" A \"", "\" B \""};
+noteVector noteNames = {"\" do \"",  "\" re \"", "\" mi \"", "\" fa \"",
+                        "\" sol \"", "\" la \"", "\" si \""};
+noteVector noteCodes = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
+noteVector fullNoteCodes = {"<c' c'' >", "<d' d''>",   "<e' e''>",  "<f' f''>",
+                            "<g' g''>",  "<a a' a''>", "<b b' b''>"};
+noteVector fullNoteCodes_bass = {"<c, c c'>", "<d, d d'>", "<e, e>", "<f, f>",
+                                 "<g, g>",    "<a, a>",    "<b, b>"};
+noteVector fakeCodes = {"d'"};
+noteVector fakeCodes_bass = {"d"};
 
 int noRepeat = 1;
 std::map<int, int> latestNotes;
 
-int generateNote() {
+int generateNote(int numberOfNotes) {
   double randNum = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-  return int(randNum * 7);
+  return int(randNum * numberOfNotes);
 }
 
-int generateUniqueNote() {
+int generateUniqueNote(int numberOfNotes) {
   int aNote;
   bool isUnique = false;
 
   while (!isUnique) {
     isUnique = true;
-    aNote = generateNote();
+    aNote = generateNote(numberOfNotes);
     for (unsigned int i = 0; i < latestNotes.size(); ++i) {
       if (latestNotes[i] == aNote) {
         isUnique = false;
@@ -44,7 +46,7 @@ int generateUniqueNote() {
 }
 
 // Here is the one and only switch to select the notes array
-std::string *getNoteArray(const std::string &format) {
+noteVector &getNoteVector(const std::string &format) {
   if (format == "name")
     return noteNames;
   else if (format == "notes_treble")
@@ -64,12 +66,12 @@ std::string *getNoteArray(const std::string &format) {
 }
 
 // Get the number of notes in this array
-int nNotesAvailable(const std::string *pNoteArray) {
-  return sizeof(pNoteArray) / sizeof(std::string);
+int nNotesAvailable(const noteVector &pNoteVector) {
+  return pNoteVector.size();
 }
 
-void printNote(int nota, const std::string *pNoteArray) {
-  std::cout << pNoteArray[nota] << " ";
+void printNote(int nota, const noteVector &pNoteVector) {
+  std::cout << pNoteVector[nota] << " ";
 }
 
 bool isFakeGeneration(const std::string &format) {
@@ -101,13 +103,13 @@ int main(int argc, char *argv[]) {
   srand(timerSeed);
 
   int nota;
-  std::string *correctNoteArray = getNoteArray(formatNote);
+  noteVector &correctNotesArray = getNoteVector(formatNote);
   if (isFakeGeneration(formatNote)) {
     // Fake note generation:
     // do not bother avoiding duplicates or randomly generate the note
     for (int i = 0; i < nNotes; ++i) {
       nota = 0;
-      printNote(nota, correctNoteArray);
+      printNote(nota, correctNotesArray);
       if ((notesPerLine != 0) && (formatNote != "name") &&
           ((i % notesPerLine) == (notesPerLine - 1)))
         std::cout << " \\break ";
@@ -118,9 +120,10 @@ int main(int argc, char *argv[]) {
     std::cout << std::endl;
   } else {
     // Actual note generation
+    int numberOfNotes = nNotesAvailable(correctNotesArray);
     for (int i = 0; i < nNotes; ++i) {
-      nota = generateUniqueNote();
-      printNote(nota, correctNoteArray);
+      nota = generateUniqueNote(numberOfNotes);
+      printNote(nota, correctNotesArray);
       if ((notesPerLine != 0) && (formatNote != "name") &&
           ((i % notesPerLine) == (notesPerLine - 1)))
         std::cout << " \\break ";
