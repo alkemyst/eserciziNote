@@ -3,16 +3,18 @@
 #include <iostream>
 #include <string>
 
-std::string noteNames_en[] = {"\" C \"", "\" D \"", "\" E \"", "\" F \"", "\" G \"", "\" A \"", "\" B \""};
-std::string noteNames[] = {"\" do \"", "\" re \"", "\" mi \"", "\" fa \"", "\" sol \"", "\" la \"", "\" si \""};
+std::string noteNames_en[] = {"\" C \"", "\" D \"", "\" E \"", "\" F \"",
+                              "\" G \"", "\" A \"", "\" B \""};
+std::string noteNames[] = {"\" do \"",  "\" re \"", "\" mi \"", "\" fa \"",
+                           "\" sol \"", "\" la \"", "\" si \""};
 std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
 std::string fullNoteCodes[] = {"<c' c'' >", "<d' d''>", "<e' e''>",
                                "<f' f''>",  "<g' g''>", "<a a' a''>",
                                "<b b' b''>"};
 std::string fullNoteCodes_bass[] = {
     "<c, c c'>", "<d, d d'>", "<e, e>", "<f, f>", "<g, g>", "<a, a>", "<b, b>"};
-std::string fakeCodes[] = { "d'" };
-std::string fakeCodes_bass[] = { "d" };
+std::string fakeCodes[] = {"d'"};
+std::string fakeCodes_bass[] = {"d"};
 
 int noRepeat = 1;
 int latestNotes[7] = {-1};
@@ -63,11 +65,11 @@ std::string *getNoteArray(const std::string &format) {
 }
 
 // Get the number of notes in this array
-int nNotesAvailable(const std::string* pNoteArray) {
-  return sizeof(pNoteArray)/sizeof(std::string);
+int nNotesAvailable(const std::string *pNoteArray) {
+  return sizeof(pNoteArray) / sizeof(std::string);
 }
 
-void printNote(int nota, const std::string* pNoteArray) {
+void printNote(int nota, const std::string *pNoteArray) {
   std::cout << pNoteArray[nota] << " ";
 }
 
@@ -100,7 +102,7 @@ int main(int argc, char *argv[]) {
   srand(timerSeed);
 
   int nota;
-  std::string* correctNoteArray = getNoteArray(formatNote);
+  std::string *correctNoteArray = getNoteArray(formatNote);
   if (isFakeGeneration(formatNote)) {
     // Fake note generation:
     // do not bother avoiding duplicates or randomly generate the note
