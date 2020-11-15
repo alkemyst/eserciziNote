@@ -18,7 +18,7 @@ function syntax() {
   echo "Syntax: $0 --help"
   echo "  Prints this help"
   echo ""
-  echo "Syntax: $0 [bass|treble|grandstaff] [id] [nPages] [size] [write|read]"
+  echo "Syntax: $0 [bass|treble|grandstaff|grand] [id] [nPages] [size] [write|read]"
   echo "Optional arguments:"
   echo "  First argument:  defines the clef (treble is the default)"
   echo "  Second argument: [id] is used to reproduce an exercise. Set to 0 to generate a random one"
