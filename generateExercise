@@ -57,6 +57,8 @@ cat << @EOF
 % Default layout:
 \version "2.20.0"
 
+\pointAndClickOff
+
 \header {
   tagline = ""
 }
