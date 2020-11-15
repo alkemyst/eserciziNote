@@ -1,6 +1,7 @@
 #include <cstdio>
 #include <ctime>
 #include <iostream>
+#include <map>
 #include <string>
 
 std::string noteNames_en[] = {"\" C \"", "\" D \"", "\" E \"", "\" F \"",
@@ -17,7 +18,7 @@ std::string fakeCodes[] = {"d'"};
 std::string fakeCodes_bass[] = {"d"};
 
 int noRepeat = 1;
-int latestNotes[7] = {-1};
+std::map<int, int> latestNotes;
 
 int generateNote() {
   double randNum = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
@@ -31,9 +32,7 @@ int generateUniqueNote() {
   while (!isUnique) {
     isUnique = true;
     aNote = generateNote();
-    for (int i = 0; i < noRepeat; ++i) {
-      // std::cerr << i << " cheching " << latestNotes[i] << " against " <<
-      // aNote << std::endl;
+    for (unsigned int i = 0; i < latestNotes.size(); ++i) {
       if (latestNotes[i] == aNote) {
         isUnique = false;
         break;
