@@ -3,15 +3,16 @@
 #include <iostream>
 #include <string>
 
-std::string noteNames[] = {"Do", "Re", "Mi", "Fa", "Sol", "La", "Si"};
+std::string noteNames_en[] = {"\" C \"", "\" D \"", "\" E \"", "\" F \"", "\" G \"", "\" A \"", "\" B \""};
+std::string noteNames[] = {"\" do \"", "\" re \"", "\" mi \"", "\" fa \"", "\" sol \"", "\" la \"", "\" si \""};
 std::string noteCodes[] = {"c'", "d'", "e'", "f'", "g'", "a'", "b'"};
 std::string fullNoteCodes[] = {"<c' c'' >", "<d' d''>", "<e' e''>",
                                "<f' f''>",  "<g' g''>", "<a a' a''>",
                                "<b b' b''>"};
 std::string fullNoteCodes_bass[] = {
     "<c, c c'>", "<d, d d'>", "<e, e>", "<f, f>", "<g, g>", "<a, a>", "<b, b>"};
-std::string fakeCode = "d'";
-std::string fakeCode_bass = "d";
+std::string fakeCodes[] = { "d'" };
+std::string fakeCodes_bass[] = { "d" };
 
 int noRepeat = 1;
 int latestNotes[7] = {-1};
@@ -40,21 +41,43 @@ int generateUniqueNote() {
 
   return aNote;
 }
-void printNote(int nota, std::string &format) {
+
+// Here is the one and only switch to select the notes array
+std::string *getNoteArray(const std::string &format) {
   if (format == "name")
-    std::cout << "\" " << noteNames[nota] << " \" ";
+    return noteNames;
   else if (format == "notes_treble")
-    std::cout << fullNoteCodes[nota] << " ";
+    return fullNoteCodes;
   else if (format == "notes_bass")
-    std::cout << fullNoteCodes_bass[nota] << " ";
+    return fullNoteCodes_bass;
   else if (format == "noteSimple")
-    std::cout << noteCodes[nota] << " ";
+    return noteCodes;
   else if (format == "fake_treble")
-    std::cout << fakeCode << " ";
+    return fakeCodes;
   else if (format == "fake_bass")
-    std::cout << fakeCode_bass << " ";
-  else
+    return fakeCodes_bass;
+  else {
     std::cerr << "unknown format: " << format << std::endl;
+    return noteNames;
+  }
+}
+
+// Get the number of notes in this array
+int nNotesAvailable(const std::string* pNoteArray) {
+  return sizeof(pNoteArray)/sizeof(std::string);
+}
+
+void printNote(int nota, const std::string* pNoteArray) {
+  std::cout << pNoteArray[nota] << " ";
+}
+
+bool isFakeGeneration(const std::string &format) {
+  if (format == "fake_treble")
+    return true;
+  else if (format == "fake_bass")
+    return true;
+  else
+    return false;
 }
 
 int main(int argc, char *argv[]) {
@@ -77,18 +100,36 @@ int main(int argc, char *argv[]) {
   srand(timerSeed);
 
   int nota;
-  for (int i = 0; i < nNotes; ++i) {
-    nota = generateUniqueNote();
-    printNote(nota, formatNote);
-    if ((notesPerLine != 0) && (formatNote != "name") &&
-        ((i % notesPerLine) == (notesPerLine - 1)))
-      std::cout << " \\break ";
+  std::string* correctNoteArray = getNoteArray(formatNote);
+  if (isFakeGeneration(formatNote)) {
+    // Fake note generation:
+    // do not bother avoiding duplicates or randomly generate the note
+    for (int i = 0; i < nNotes; ++i) {
+      nota = 0;
+      printNote(nota, correctNoteArray);
+      if ((notesPerLine != 0) && (formatNote != "name") &&
+          ((i % notesPerLine) == (notesPerLine - 1)))
+        std::cout << " \\break ";
 
-    if (i % 4 == 3)
-      std::cout << std::endl;
-    if (noRepeat)
-      latestNotes[i % noRepeat] = nota;
+      if (i % 4 == 3)
+        std::cout << std::endl;
+    }
+    std::cout << std::endl;
+  } else {
+    // Actual note generation
+    for (int i = 0; i < nNotes; ++i) {
+      nota = generateUniqueNote();
+      printNote(nota, correctNoteArray);
+      if ((notesPerLine != 0) && (formatNote != "name") &&
+          ((i % notesPerLine) == (notesPerLine - 1)))
+        std::cout << " \\break ";
+
+      if (i % 4 == 3)
+        std::cout << std::endl;
+      if (noRepeat)
+        latestNotes[i % noRepeat] = nota;
+    }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
   return 0;
 }
